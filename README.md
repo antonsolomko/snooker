@@ -1,1 +1,1 @@
-Computer vision project for snooker
+Snooker computer vision project
