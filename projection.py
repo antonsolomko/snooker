@@ -290,6 +290,9 @@ def projection2d(coordinates_from, coordinates_to):
 class Projection():
     def __init__(self, screen_coordinates, screen_center=(0,0),
                  table_dimensions=TABLE_DIMS):
+        """
+        screen_coordinates
+        """
         assert len(screen_coordinates) == 4
         self.table_dimensions = table_dimensions
         self.origin = screen_center
