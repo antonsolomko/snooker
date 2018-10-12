@@ -82,9 +82,9 @@ def horizon_slope(lines):
     if x1 is not None and x2 is not None:
         res = np.arctan2(y1-y2, x1-x2)
     elif x1 is not None:
-        res = y2
+        res = y2 - PI/2
     elif x2 is not None:
-        res = y1
+        res = y1 - PI/2
     else:
         res = y1-y2
     res %= PI
@@ -213,7 +213,8 @@ def select_clusters(img, clusters, origin):
         quadruple.sort()
         borders = [lines[0] for lines in quadruple]
         corners = get_corners(borders, origin)
-        if corners and horizon_slope(borders)<0.3:
+        slope = horizon_slope(borders)
+        if corners and slope<0.3:
             # average color in the central area
             mean_color,stddev = mean_deviation(img_hsv,corners,green_mask(img))
             for i in range(4):
@@ -222,8 +223,8 @@ def select_clusters(img, clusters, origin):
                     corners = get_corners(borders, origin)
                     if not all(in_frame(*c) for c in corners):
                         continue
-                    projection = Projection(corners, origin)
-                    inner_strip, outer_strip = projection.border_neighbourhoods(i-1)
+                    pr = Projection(corners, origin)
+                    inner_strip, outer_strip = pr.border_neighbourhoods(i-1)
                     inner_color,inner_dev = mean_deviation(img_hsv,inner_strip)
                     outer_color,outer_dev = mean_deviation(img_hsv,outer_strip)
                     inner_diff = np.abs(inner_color-mean_color)
@@ -262,7 +263,7 @@ def detect_table(img):
     img_edges = cv2.Canny(img_gray, 25, 100, apertureSize=3)
     lines = cv2.HoughLines(img_edges, 1, PI/720, 250)
     lines = [line[0][::-1] for line in lines]
-    if len(lines) > 300:
+    if len(lines) > 500:
         return None  # too many lines
     origin = (img.shape[1]//2, img.shape[0]//2)
     translate = line_translation(origin)
@@ -295,14 +296,14 @@ def draw_polygon(img, corners, color=(255,255,255), width=1):
         draw_segment(img, (x1,y1,x2,y2), color, width)
 
 
-TEST = 0
+TEST = 1
 if __name__ == '__main__':
     import os
 
     processed = [f for f in os.listdir("data/lines/") if '.' in f]
-    processed = []
+    #processed = []
     files = [f for f in os.listdir("data/") if '.' in f and f not in processed]
-    #files = ['0006.jpg']
+    files = ['0017.png']
     for filename in files:
         print(filename)
         img = cv2.imread('data/' + filename)
